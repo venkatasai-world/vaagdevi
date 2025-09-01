@@ -1,0 +1,142 @@
+{
+    "sections": {
+      "A": {
+        "subjects": [
+          {
+            "name": "Design and Analysis of Algorithms",
+            "faculty": "Dr. K. Rajashekar",
+            "email": "rajashekar@gmail.com",
+            "password": "B22CS27"
+          },
+          {
+            "name": "Machine Learning",
+            "faculty": "Dr. A. Swetha",
+            "email": "swetha@gmail.com",
+            "password": "B22AI05"
+          },
+          {
+            "name": "Computer Networks",
+            "faculty": "Mr. N. Karthik",
+            "email": "karthik@gmail.com",
+            "password": "B22CS28"
+          },
+          {
+            "name": "Business Economics & Financial Analysis",
+            "faculty": "Dr. K. Venu Reddy",
+            "email": "venu@gmail.com",
+            "password": "B22MB01"
+          },
+          {
+            "name": "Web Programming",
+            "faculty": "Mrs. K. Vanaja",
+            "email": "vanaja@gmail.com",
+            "password": "B22AI07"
+          },
+          {
+            "name": "Intellectual Property Rights",
+            "faculty": "Mrs. Rajini",
+            "email": "rajini@gmail.com",
+            "password": "B22IPR01"
+          },
+          {
+            "name": "Mobile Computing",
+            "faculty": "Dr. B. Sravan Kumar",
+            "email": "sravan@gmail.com",
+            "password": "B22MC01"
+          }
+        ]
+      },
+      "B": {
+        "subjects": [
+          {
+            "name": "Design and Analysis of Algorithms",
+            "faculty": "Dr. K. Rajashekar",
+            "email": "rajashekar@gmail.com",
+            "password": "22CS27"
+          },
+          {
+            "name": "Machine Learning",
+            "faculty": "Dr. A. Swetha",
+            "email": "swetha@gmail.com",
+            "password": "22AI05"
+          },
+          {
+            "name": "Computer Networks",
+            "faculty": "Mr. N. Karthik",
+            "email": "karthik@gmail.com",
+            "password": "22CS28"
+          },
+          {
+            "name": "Business Economics & Financial Analysis",
+            "faculty": "Mrs. S. Shalaja",
+            "email": "shalaja@gmail.com",
+            "password": "22MB01"
+          },
+          {
+            "name": "Web Programming",
+            "faculty": "Dr. A. Swetha",
+            "email": "swetha@gmail.com",
+            "password": "22AI07"
+          },
+          {
+            "name": "Intellectual Property Rights",
+            "faculty": "Mrs. Rajini",
+            "email": "rajini@gmail.com",
+            "password": "22IPR01"
+          },
+          {
+            "name": "Mobile Computing",
+            "faculty": "Dr. B. Sravan Kumar",
+            "email": "sravan@gmail.com",
+            "password": "22MC01"
+          }
+        ]
+      },
+      "C": {
+        "subjects": [
+          {
+            "name": "Design and Analysis of Algorithms",
+            "faculty": "Dr. K. Rajashekar",
+            "email": "rajashekar@gmail.com",
+            "password": "22CS27"
+          },
+          {
+            "name": "Machine Learning",
+            "faculty": "Dr. A. Swetha",
+            "email": "swetha@gmail.com",
+            "password": "22AI05"
+          },
+          {
+            "name": "Computer Networks",
+            "faculty": "Mr. N. Karthik",
+            "email": "karthik@gmail.com",
+            "password": "22CS28"
+          },
+          {
+            "name": "Business Economics & Financial Analysis",
+            "faculty": "Mrs. S. Shalaja",
+            "email": "shalaja@gmail.com",
+            "password": "22MB01"
+          },
+          {
+            "name": "Web Programming",
+            "faculty": "Mrs. Ch. Shruthi",
+            "email": "shruthi@gmail.com",
+            "password": "22AI07"
+          },
+          {
+            "name": "Intellectual Property Rights",
+            "faculty": "Mrs. Rajini",
+            "email": "rajini@gmail.com",
+            "password": "22IPR01"
+          },
+          {
+            "name": "Mobile Computing",
+            "faculty": "Dr. B. Sravan Kumar",
+            "email": "sravan@gmail.com",
+            "password": "22MC01"
+          }
+        ]
+      }
+    }
+  }

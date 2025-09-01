@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vaagdevi College of Engineering</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #e6f7ff;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      display: flex;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      width: 700px;
+      max-width: 90%;
+    }
+
+    .image-box {
+      flex: 1;
+      background-color: #f0f8ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .loginpage {
+      flex: 1;
+      padding: 40px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .loginpage input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .loginpage button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .loginpage button:hover {
+      background-color: #45a049;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Image on the left -->
+    <div class="image-box">
+      <img src="images/indian-teacher-talking-with-students-female-teacher-in-a-classroom-during-a-lesson-education-at-an-elementary-school-video.jpg" alt="Teacher Login Illustration" />
+    </div>
+
+    <!-- Login form on the right -->
+    <div class="loginpage">
+      <h3>Faculty Login</h3>
+      <form id="teacherLoginForm">
+        <label for="email">E-mail</label><br>
+        <input type="email" id="email" placeholder="Enter your mail ID" required><br><br>
+
+        <label for="password">Password</label><br>
+        <input type="password" id="password" placeholder="Enter your password" required><br><br>
+
+
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Teacher authentication system
+    class TeacherAuth {
+      constructor() {
+        this.studentsData = [];
+        this.marksData = [];
+        this.teachersData = {};
+        this.currentTeacher = null;
+        this.dataLoaded = false;
+        this.loadData();
+      }
+
+      async loadData() {
+        try {
+          console.log('Starting to load data...');
+          
+          // Load students data
+          console.log('Loading students.json...');
+          const studentsResponse = await fetch('students.json');
+          if (!studentsResponse.ok) {
+            throw new Error(`Failed to load students.json: ${studentsResponse.status}`);
+          }
+          this.studentsData = await studentsResponse.json();
+          console.log('Students data loaded:', this.studentsData.length, 'students');
+          
+          // Load marks data
+          console.log('Loading student_marks.json...');
+          const marksResponse = await fetch('student_marks.json');
+          if (!marksResponse.ok) {
+            throw new Error(`Failed to load student_marks.json: ${marksResponse.status}`);
+          }
+          this.marksData = await marksResponse.json();
+          console.log('Marks data loaded:', this.marksData.length, 'entries');
+          
+          // Load teachers data
+          console.log('Loading teachers.json...');
+          const teachersResponse = await fetch('teachers.json');
+          if (!teachersResponse.ok) {
+            throw new Error(`Failed to load teachers.json: ${teachersResponse.status}`);
+          }
+          this.teachersData = await teachersResponse.json();
+          console.log('Teachers data loaded:', this.teachersData);
+          
+          this.dataLoaded = true;
+          console.log('All data loaded successfully');
+        } catch (error) {
+          console.error('Error loading data:', error);
+          this.dataLoaded = false;
+          alert(`Error loading data: ${error.message}. Please check if all JSON files are present.`);
+        }
+      }
+
+      authenticateTeacher(email, password) {
+        // Find teacher in teachers.json data
+        let foundTeacher = null;
+        let assignedSubject = null;
+        
+        console.log('Attempting login with:', email, password);
+        console.log('Teachers data available:', this.teachersData);
+        
+        // Check if teachers data is loaded
+        if (!this.teachersData || !this.teachersData.sections) {
+          console.error('Teachers data not loaded properly');
+          return { success: false, message: 'System data not loaded. Please refresh and try again.' };
+        }
+        
+        // Search through all sections for the teacher
+        for (const sectionKey in this.teachersData.sections) {
+          const section = this.teachersData.sections[sectionKey];
+          console.log(`Checking section ${sectionKey}:`, section.subjects);
+          
+          for (const subject of section.subjects) {
+            console.log(`Checking subject: ${subject.name}, faculty: ${subject.faculty}, email: ${subject.email}`);
+            
+            if (subject.email === email && subject.password === password) {
+              foundTeacher = subject.faculty;
+              assignedSubject = subject.name;
+              console.log('Teacher found:', foundTeacher, 'Subject:', assignedSubject);
+              break;
+            }
+          }
+          if (foundTeacher) break;
+        }
+        
+        if (foundTeacher && assignedSubject) {
+          this.currentTeacher = {
+            email: email,
+            subject: assignedSubject,
+            name: foundTeacher
+          };
+          
+          // Store in session storage
+          sessionStorage.setItem('currentTeacher', JSON.stringify(this.currentTeacher));
+          
+          return { success: true, message: 'Login successful' };
+        } else {
+          console.log('No teacher found with these credentials');
+          return { success: false, message: 'Invalid email or password. Please check your credentials.' };
+        }
+      }
+
+      getCurrentTeacher() {
+        if (this.currentTeacher) {
+          return this.currentTeacher;
+        }
+        
+        const storedTeacher = sessionStorage.getItem('currentTeacher');
+        if (storedTeacher) {
+          this.currentTeacher = JSON.parse(storedTeacher);
+          return this.currentTeacher;
+        }
+        
+        return null;
+      }
+
+      getStudentsBySection(section) {
+        return this.studentsData.filter(s => s.section === section);
+      }
+
+      getStudentMarks(rollNo) {
+        return this.marksData.find(m => m["Roll No"] === rollNo);
+      }
+
+      updateStudentMarks(rollNo, subject, examType, marks) {
+        const existingIndex = this.marksData.findIndex(m => m["Roll No"] === rollNo);
+        
+        if (existingIndex !== -1) {
+          // Update existing marks
+          if (!this.marksData[existingIndex].Subjects[subject]) {
+            this.marksData[existingIndex].Subjects[subject] = {
+              "Mid 1": "NA",
+              "Mid 2": "NA",
+              "Average": "NA"
+            };
+          }
+          
+          this.marksData[existingIndex].Subjects[subject][examType] = marks;
+          
+          // Calculate average if both mid exams are present
+          const mid1 = this.marksData[existingIndex].Subjects[subject]["Mid 1"];
+          const mid2 = this.marksData[existingIndex].Subjects[subject]["Mid 2"];
+          
+          if (mid1 !== "NA" && mid2 !== "NA") {
+            const avg = Math.round((parseInt(mid1) + parseInt(mid2)) / 2);
+            this.marksData[existingIndex].Subjects[subject]["Average"] = avg.toString();
+          }
+          
+          return this.marksData[existingIndex];
+        } else {
+          // Create new marks entry
+          const newEntry = {
+            "Roll No": rollNo,
+            "Subjects": {
+              [subject]: {
+                "Mid 1": examType === "Mid 1" ? marks : "NA",
+                "Mid 2": examType === "Mid 2" ? marks : "NA",
+                "Average": "NA"
+              }
+            }
+          };
+          
+          this.marksData.push(newEntry);
+          return newEntry;
+        }
+      }
+    }
+
+    // Global teacher auth instance
+    let teacherAuth;
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      teacherAuth = new TeacherAuth();
+    });
+
+    // Handle form submission
+    document.getElementById('teacherLoginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!teacherAuth) {
+        alert('System not ready. Please wait and try again.');
+        return;
+      }
+
+      // Wait for data to load if needed
+      let attempts = 0;
+      const maxAttempts = 20;
+      
+      while (!teacherAuth.dataLoaded && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+      }
+      
+      if (!teacherAuth.dataLoaded) {
+        alert('Unable to load data. Please refresh the page and try again.');
+        return;
+      }
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const result = teacherAuth.authenticateTeacher(email, password);
+      
+      if (result.success) {
+        alert(`Welcome ${teacherAuth.currentTeacher.name}! You are logged in for ${teacherAuth.currentTeacher.subject}`);
+        // Redirect to teacher dashboard
+        window.location.href = 'teacherdashboard.html';
+      } else {
+        alert(`Login Failed: ${result.message}`);
+      }
+    });
+
+
+  </script>
+</body>
+</html>

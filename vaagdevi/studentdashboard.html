@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f7ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .dashboard-box {
+      background-color: #ffffff;
+      border: 3px solid #4CAF50;
+      border-radius: 20px;
+      padding: 30px;
+      width: 95%;
+      max-width: 900px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: #d80000;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid black;
+      margin: 0 auto 20px auto;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .details {
+      margin-bottom: 30px;
+    }
+
+    .download_pdf {
+      margin-top: 20px;
+    }
+
+    .download_pdf a button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .download_pdf a button:hover {
+      background-color: #45a049;
+    }
+
+    /* Marks Table */
+    .marks-table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 0 8px #ccc;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: white;
+      margin-top: 20px;
+    }
+
+    .marks-table th, .marks-table td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    .marks-table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .marks-table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .marks-table tr:hover {
+      background-color: #d4f5ff;
+    }
+
+    @media (max-width: 600px) {
+      .marks-table th, .marks-table td {
+        font-size: 14px;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-box">
+    <h2>STUDENT DASHBOARD</h2>
+
+    <div class="avatar">
+      <img src="https://img.freepik.com/premium-vector/boy-with-hoodie-that-says-hes-boy_1230457-43316.jpg" alt="Student Avatar" />
+    </div>
+
+    <div class="details" id="studentDetails">
+      <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
+      <p><strong>HT No:</strong> <span id="studentRollNo">Loading...</span></p>
+      <p><strong>Section:</strong> <span id="studentSection">Loading...</span></p>
+    </div>
+
+    <!-- Marks Table -->
+    <table class="marks-table" id="marksTable">
+      <tr>
+        <th>S.No</th>
+        <th>Subject Name</th>
+        <th>Mid 1</th>
+        <th>Mid 2</th>
+        <th>Average</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Design and Analysis of Algorithms</td>
+        <td id="daa-mid1">---</td>
+        <td id="daa-mid2">---</td>
+        <td id="daa-avg">---</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Machine Learning</td>
+        <td id="ml-mid1">---</td>
+        <td id="ml-mid2">---</td>
+        <td id="ml-avg">---</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Computer Networks</td>
+        <td id="cn-mid1">---</td>
+        <td id="cn-mid2">---</td>
+        <td id="cn-avg">---</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Business Economics & Financial Analysis</td>
+        <td id="befa-mid1">---</td>
+        <td id="befa-mid2">---</td>
+        <td id="befa-avg">---</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Web Programming</td>
+        <td id="wp-mid1">---</td>
+        <td id="wp-mid2">---</td>
+        <td id="wp-avg">---</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Intellectual Property Rights</td>
+        <td id="ipr-mid1">---</td>
+        <td id="ipr-mid2">---</td>
+        <td id="ipr-avg">---</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Mobile Computing</td>
+        <td id="mc-mid1">---</td>
+        <td id="mc-mid2">---</td>
+        <td id="mc-avg">---</td>
+      </tr>
+    </table>
+
+    <div class="download_pdf">
+      <a href="https://jntuh.ac.in/uploads/academics/R22B.Tech.CSE(AIML)CourseStructureSyllabus2.pdf" target="_blank">
+        <button>Download Syllabus</button>
+      </a>
+    </div>
+    
+         <!-- Real-time update indicator -->
+     <div style="margin-top: 20px; padding: 10px; background-color: #e8f5e8; border-radius: 8px; border: 1px solid #4CAF50;">
+       <p style="margin: 0; color: #2e7d32; font-size: 14px;">
+         🔄 <strong>Auto-refresh:</strong> Marks are automatically updated every 30 seconds. Use "Refresh Marks Now" for immediate updates.
+       </p>
+      <button id="refreshMarksBtn" onclick="refreshMarks()" style="margin-top: 10px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+        🔄 Refresh Marks Now
+      </button>
+    </div>
+    
+         <!-- Last Update Status for Students -->
+     <div id="studentLastUpdateStatus" style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3; color: #1976d2; text-align: center;">
+       <p style="margin: 0; font-size: 14px;">
+         📅 <strong>Marks Last Updated:</strong> <span id="studentLastUpdateTime">Loading...</span>
+       </p>
+     </div>
+     
+
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Load student data when page loads
+    window.addEventListener('load', function() {
+      const currentStudent = getCurrentStudentInfo();
+      
+      if (!currentStudent) {
+        alert('Please login first');
+        window.location.href = 'studentlogin.html';
+        return;
+      }
+      
+      // Display student information
+      document.getElementById('studentName').textContent = currentStudent.name;
+      document.getElementById('studentRollNo').textContent = currentStudent.roll_no;
+      document.getElementById('studentSection').textContent = currentStudent.section;
+      
+      // Update avatar based on gender
+      const avatarImg = document.querySelector('.avatar img');
+      if (currentStudent.gender === 'Female') {
+        avatarImg.src = 'images/female.png';
+      } else {
+        avatarImg.src = 'images/male.png';
+      }
+      
+             // Function to load and display marks from Node.js API
+       async function loadAndDisplayMarks(rollNo) {
+         try {
+           console.log('🔄 Fetching marks from server for student:', rollNo);
+           
+           // Clear any existing error/no marks messages
+           const existingError = document.getElementById('errorMessage');
+           const existingNoMarks = document.getElementById('noMarksMessage');
+           if (existingError) existingError.remove();
+           if (existingNoMarks) existingNoMarks.remove();
+           
+           // Fetch marks from Node.js API
+           const marks = await getStudentMarks(rollNo);
+           
+           console.log('Raw marks response:', marks);
+           
+           if (marks && marks.Subjects && Object.keys(marks.Subjects).length > 0) {
+             // Store marks in session storage for offline access
+             sessionStorage.setItem(`studentMarks_${rollNo}`, JSON.stringify(marks));
+             console.log('✅ Marks fetched from server successfully');
+             
+             // Map subject names to IDs
+             const subjectMap = {
+               'Design and Analysis of Algorithms': 'daa',
+               'Machine Learning': 'ml',
+               'Computer Networks': 'cn',
+               'Business Economics & Financial Analysis': 'befa',
+               'Web Programming': 'wp',
+               'Intellectual Property Rights': 'ipr',
+               'Mobile Computing': 'mc'
+             };
+             
+             // Display marks consistently in the table
+             displayMarksInTable(marks, subjectMap);
+             
+             console.log('✅ Marks loaded and displayed successfully');
+          } else {
+            console.log('No marks found for student:', rollNo);
+            // Show message that no marks are available yet
+            showNoMarksMessage();
+          }
+        } catch (error) {
+          console.error('❌ Error loading marks:', error);
+          showErrorMessage('Error loading marks from server. Please check if server is running.');
+        }
+      }
+      
+      // Function to show no marks message
+      function showNoMarksMessage() {
+        const noMarksDiv = document.getElementById('noMarksMessage');
+        if (!noMarksDiv) {
+          const messageDiv = document.createElement('div');
+          messageDiv.id = 'noMarksMessage';
+          messageDiv.style.cssText = 'margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7; color: #856404; text-align: center;';
+          messageDiv.innerHTML = `
+            <p style="margin: 0; font-size: 16px;">
+              📝 <strong>No marks available yet.</strong><br>
+              Your marks will appear here once teachers have entered them.
+            </p>
+          `;
+          document.querySelector('.dashboard-box').appendChild(messageDiv);
+        }
+      }
+      
+      // Function to show error message
+      function showErrorMessage(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        if (!errorDiv) {
+          const messageDiv = document.createElement('div');
+          messageDiv.id = 'errorMessage';
+          messageDiv.style.cssText = 'margin-top: 20px; padding: 15px; background-color: #f8d7da; border-radius: 8px; border: 1px solid #f5c6cb; color: #721c24; text-align: center;';
+          messageDiv.innerHTML = `
+            <p style="margin: 0; font-size: 16px;">
+              ❌ <strong>Error:</strong> ${message}
+            </p>
+          `;
+          document.querySelector('.dashboard-box').appendChild(messageDiv);
+        }
+      }
+      
+      // Load and display marks initially with loading state
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loadingMarks';
+      loadingDiv.style.cssText = 'margin-top: 20px; padding: 15px; background-color: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3; color: #1976d2; text-align: center;';
+      loadingDiv.innerHTML = `
+        <p style="margin: 0; font-size: 16px;">
+          ⏳ <strong>Loading marks...</strong> Please wait while we fetch your latest marks.
+        </p>
+      `;
+      document.querySelector('.dashboard-box').appendChild(loadingDiv);
+      
+      // Load marks after a short delay to ensure auth.js is ready
+      setTimeout(async () => {
+        try {
+          await loadAndDisplayMarks(currentStudent.roll_no);
+        } catch (error) {
+          console.error('Failed to load marks:', error);
+          showErrorMessage('Failed to load marks. Please refresh the page.');
+        } finally {
+          // Remove loading indicator
+          const loadingElement = document.getElementById('loadingMarks');
+          if (loadingElement) {
+            loadingElement.remove();
+          }
+        }
+      }, 1500);
+      
+             // Auto-refresh marks every 30 seconds to show latest updates from teachers
+       const refreshInterval = setInterval(async () => {
+         await loadAndDisplayMarks(currentStudent.roll_no);
+         updateStudentLastUpdateStatus();
+       }, 30000);
+      
+      // Store interval ID for cleanup
+      window.refreshInterval = refreshInterval;
+      
+      // Load initial last update status
+      updateStudentLastUpdateStatus();
+      
+      alert(`🎓 Welcome ${currentStudent.name}!`);
+    });
+    
+           // Function to update student dashboard's last update status
+       function updateStudentLastUpdateStatus() {
+         const updateInfo = localStorage.getItem('marksUpdateInfo');
+         const lastUpdateElement = document.getElementById('studentLastUpdateTime');
+         
+         if (updateInfo && lastUpdateElement) {
+           try {
+             const info = JSON.parse(updateInfo);
+             const date = new Date(info.lastUpdated);
+             const timeString = date.toLocaleString();
+             lastUpdateElement.textContent = `${timeString} by ${info.teacher} (${info.subject})`;
+           } catch (e) {
+             lastUpdateElement.textContent = 'Recently updated';
+           }
+         } else {
+           if (lastUpdateElement) {
+             lastUpdateElement.textContent = 'No recent updates';
+           }
+         }
+       }
+       
+
+    
+         // Function to manually refresh marks
+     async function refreshMarks() {
+       const currentStudent = getCurrentStudentInfo();
+       if (currentStudent) {
+         const btn = document.getElementById('refreshMarksBtn');
+         btn.textContent = '🔄 Refreshing...';
+         btn.disabled = true;
+         
+         // Refresh marks from server
+         await loadAndDisplayMarks(currentStudent.roll_no);
+         
+         // Reset button after 1 second
+         setTimeout(() => {
+           btn.textContent = '🔄 Refresh Marks Now';
+           btn.disabled = false;
+         }, 1000);
+       }
+     }
+     
+            // Function to display marks consistently in the table
+       function displayMarksInTable(marks, subjectMap) {
+         // Reset all marks to default first
+         Object.values(subjectMap).forEach(subjectId => {
+           document.getElementById(subjectId + '-mid1').textContent = '---';
+           document.getElementById(subjectId + '-mid2').textContent = '---';
+           document.getElementById(subjectId + '-avg').textContent = '---';
+         });
+         
+         // Display actual marks
+         Object.keys(marks.Subjects).forEach(subject => {
+           const subjectId = subjectMap[subject];
+           if (subjectId) {
+             const subjectMarks = marks.Subjects[subject];
+             const mid1Element = document.getElementById(subjectId + '-mid1');
+             const mid2Element = document.getElementById(subjectId + '-mid2');
+             const avgElement = document.getElementById(subjectId + '-avg');
+             
+             if (mid1Element && mid2Element && avgElement) {
+               mid1Element.textContent = subjectMarks['Mid 1'] || '---';
+               mid2Element.textContent = subjectMarks['Mid 2'] || '---';
+               avgElement.textContent = subjectMarks['Average'] || '---';
+               
+               // Add visual styling for marks
+               if (subjectMarks['Mid 1'] !== 'NA' && subjectMarks['Mid 1'] !== '---') {
+                 mid1Element.style.color = '#2e7d32';
+                 mid1Element.style.fontWeight = 'bold';
+               }
+               if (subjectMarks['Mid 2'] !== 'NA' && subjectMarks['Mid 2'] !== '---') {
+                 mid2Element.style.color = '#2e7d32';
+                 mid2Element.style.fontWeight = 'bold';
+               }
+               if (subjectMarks['Average'] !== 'NA' && subjectMarks['Average'] !== '---') {
+                 avgElement.style.color = '#1976d2';
+                 avgElement.style.fontWeight = 'bold';
+               }
+             }
+           }
+         });
+       }
+       
+       
+    
+    // Add logout functionality
+    function logout() {
+      logoutStudent();
+    }
+    
+    // Add logout button (optional)
+    document.addEventListener('DOMContentLoaded', function() {
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 10px 20px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;';
+      logoutBtn.onclick = logout;
+      document.body.appendChild(logoutBtn);
+    });
+  </script>
+</body>
+</html>

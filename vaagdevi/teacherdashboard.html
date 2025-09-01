@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f7ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background:  #4CAF50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .container {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    select {
+      padding: 0.5rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .student-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .student-card input[type="number"] {
+      margin-top: 0.3rem;
+      padding: 0.5rem;
+      width: 80%;
+      font-size: 1rem;
+    }
+
+    .student-card input[type="checkbox"] {
+      margin-top: 0.5rem;
+    }
+
+    .buttons {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .buttons button {
+      padding: 0.8rem 1.5rem;
+      background: #007ACC;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .buttons button:hover {
+      background: #005fa3;
+    }
+
+    .missing {
+      border: 2px solid red;
+    }
+
+    .details {
+      margin-bottom: 30px;
+      text-align: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .edit-mode {
+      background: #ff9800 !important;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background: #d32f2f;
+    }
+
+    .student-name {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .current-marks {
+      font-size: 0.9em;
+      color: #666;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  Teacher Dashboard
+  <button class="logout-btn" onclick="logoutTeacher()">Logout</button>
+</div>
+
+<div class="details" id="teacherDetails">
+  <p><strong>Faculty Name:</strong> <span id="teacherName">Loading...</span></p>
+  <p><strong>Subject:</strong> <span id="teacherSubject">Loading...</span></p>
+</div>
+
+<div style="text-align:center" class="container">
+  
+  <label for="exam">Select Exam:</label>
+  <select id="exam">
+    <option value="Mid 1">Mid 1</option>
+    <option value="Mid 2">Mid 2</option>
+  </select>
+
+  <label for="section">Select Section:</label>
+  <select id="section" onchange="loadStudentsBySection()">
+    <option value="A">Section A</option>
+    <option value="B">Section B</option>
+    <option value="C">Section C</option>
+  </select>
+
+  <div class="grid" id="studentGrid"></div>
+
+      <div class="buttons">
+      <button onclick="submitMarks()">✅ Submit Marks</button>
+      <button id="editToggle" onclick="toggleEditMode()">✏️ Change Marks</button>
+      <button onclick="saveMarksToFile()">💾 Download Marks File</button>
+    </div>
+    
+         <!-- Auto-save indicator -->
+     <div id="autoSaveIndicator" style="margin-top: 15px; padding: 10px; background-color: #e8f5e8; border-radius: 8px; border: 1px solid #4CAF50; display: none;">
+       <p style="margin: 0; color: #2e7d32; font-size: 14px;">
+         💾 <strong>Auto-saving:</strong> Marks are automatically saved locally. Use "Save Marks for Students" to make them visible to students.
+       </p>
+     </div>
+    
+         <!-- Last Update Status -->
+     <div id="lastUpdateStatus" style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3; color: #1976d2; text-align: center;">
+       <p style="margin: 0; font-size: 14px;">
+         📅 <strong>Last Updated:</strong> <span id="lastUpdateTime">Loading...</span>
+       </p>
+               <button onclick="syncMarksToFile()" style="margin-top: 10px; padding: 8px 16px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+          💾 Save Marks for Students
+        </button>
+     </div>
+</div>
+
+<script>
+  // Teacher Dashboard System
+  class TeacherDashboard {
+    constructor() {
+      this.studentsData = [];
+      this.marksData = [];
+      this.teachersData = {};
+      this.currentTeacher = null;
+      this.dataLoaded = false;
+      this.currentSection = 'A';
+      this.currentExam = 'Mid 1';
+      this.editMode = false;
+      this.teacherSections = []; // Sections where this teacher teaches
+      this.inputTimeout = null; // For auto-saving input
+      this.loadData();
+    }
+
+    async loadData() {
+      try {
+        // Load students data
+        const studentsResponse = await fetch('students.json');
+        this.studentsData = await studentsResponse.json();
+        
+        // Load marks data - try localStorage first, then fallback to JSON file
+        let marksData = null;
+        const localMarks = localStorage.getItem('studentMarksData');
+        if (localMarks) {
+          try {
+            marksData = JSON.parse(localMarks);
+            console.log('✅ Loaded marks from localStorage');
+          } catch (e) {
+            console.log('⚠️ Error parsing localStorage marks, loading from file');
+          }
+        }
+        
+        if (!marksData) {
+          const marksResponse = await fetch('student_marks.json');
+          marksData = await marksResponse.json();
+          console.log('✅ Loaded marks from student_marks.json file');
+        }
+        
+        this.marksData = marksData;
+        
+        // Load teachers data
+        const teachersResponse = await fetch('teachers.json');
+        this.teachersData = await teachersResponse.json();
+        
+        this.dataLoaded = true;
+        console.log('Dashboard data loaded successfully');
+        this.initializeDashboard();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        this.dataLoaded = false;
+      }
+    }
+
+    initializeDashboard() {
+      // Get teacher info from session storage
+      const teacherInfo = sessionStorage.getItem('currentTeacher');
+      if (teacherInfo) {
+        this.currentTeacher = JSON.parse(teacherInfo);
+        this.loadTeacherSections();
+        this.displayTeacherInfo();
+        
+        // Load and display last update status
+        this.loadLastUpdateStatus();
+      } else {
+        // Redirect to login if no teacher info
+        window.location.href = 'teacherlogin.html';
+        return;
+      }
+
+      this.loadStudentsBySection();
+    }
+
+    loadLastUpdateStatus() {
+      const updateInfo = localStorage.getItem('marksUpdateInfo');
+      if (updateInfo) {
+        try {
+          const info = JSON.parse(updateInfo);
+          this.updateLastUpdateStatus(info);
+        } catch (e) {
+          console.log('No previous update info found');
+        }
+      }
+    }
+
+    loadTeacherSections() {
+      // Find which sections this teacher teaches based on their name
+      this.teacherSections = [];
+      
+      for (const sectionKey in this.teachersData.sections) {
+        const section = this.teachersData.sections[sectionKey];
+        for (const subject of section.subjects) {
+          if (subject.faculty === this.currentTeacher.name) {
+            this.teacherSections.push(sectionKey);
+            break;
+          }
+        }
+      }
+      
+      // Update section dropdown to only show sections where teacher teaches
+      this.updateSectionDropdown();
+    }
+
+    updateSectionDropdown() {
+      const sectionSelect = document.getElementById('section');
+      sectionSelect.innerHTML = '';
+      
+      this.teacherSections.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section;
+        option.textContent = `Section ${section}`;
+        sectionSelect.appendChild(option);
+      });
+      
+      // Set first available section as default
+      if (this.teacherSections.length > 0) {
+        this.currentSection = this.teacherSections[0];
+        sectionSelect.value = this.currentSection;
+      }
+    }
+
+    displayTeacherInfo() {
+      document.getElementById('teacherName').textContent = this.currentTeacher.name || 'Unknown';
+      document.getElementById('teacherSubject').textContent = this.currentTeacher.subject || 'Unknown';
+    }
+
+    loadStudentsBySection() {
+      this.currentSection = document.getElementById('section').value;
+      this.currentExam = document.getElementById('exam').value;
+      
+      const sectionStudents = this.studentsData.filter(s => s.section === this.currentSection);
+      this.displayStudentCards(sectionStudents);
+    }
+
+    displayStudentCards(students) {
+      const studentGrid = document.getElementById('studentGrid');
+      studentGrid.innerHTML = '';
+
+      students.forEach(student => {
+        const card = document.createElement('div');
+        card.className = 'student-card';
+        
+        // Get current marks for this student and subject
+        const currentMarks = this.getStudentMarks(student.roll_no);
+        const subjectMarks = currentMarks && currentMarks.Subjects ? 
+          currentMarks.Subjects[this.currentTeacher.subject] : null;
+        
+        const currentMark = subjectMarks ? subjectMarks[this.currentExam] : 'NA';
+        
+        card.innerHTML = `
+          <div class="student-name">${student.name}</div>
+          <strong>${student.roll_no}</strong><br>
+          <div class="current-marks">Current ${this.currentExam}: ${currentMark}</div>
+          <input type="number" min="0" max="100" placeholder="Enter Marks" 
+                 data-roll="${student.roll_no}" class="markInput" 
+                 value="${currentMark !== 'NA' ? currentMark : ''}" 
+                 ${!this.editMode ? 'disabled' : ''}"><br>
+          <label>
+            <input type="checkbox" class="absentCheck" data-roll="${student.roll_no}"
+                   ${currentMark === 'A' ? 'checked' : ''}
+                   ${!this.editMode ? 'disabled' : ''}>
+            Absent
+          </label>
+        `;
+        
+        // Add event listeners
+        const markInput = card.querySelector('.markInput');
+        const absentCheck = card.querySelector('.absentCheck');
+        
+        markInput.addEventListener('input', (e) => {
+          if (e.target.value !== '') {
+            absentCheck.checked = false;
+            
+            // Auto-save marks as teacher types (with a small delay to avoid too many saves)
+            clearTimeout(this.inputTimeout);
+            this.inputTimeout = setTimeout(() => {
+              if (e.target.value !== '' && e.target.value >= 0 && e.target.value <= 100) {
+                this.updateStudentMarks(student.roll_no, e.target.value);
+              }
+            }, 1000); // Save after 1 second of no typing
+          }
+        });
+        
+        absentCheck.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            markInput.value = '';
+          }
+        });
+        
+        studentGrid.appendChild(card);
+      });
+    }
+
+    getStudentMarks(rollNo) {
+      return this.marksData.find(m => m["Roll No"] === rollNo);
+    }
+
+    // Get student marks from API
+    async getStudentMarksFromAPI(rollNo) {
+      try {
+        const response = await fetch(`/api/marks/${rollNo}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          return result.data;
+        } else {
+          console.log('No marks found for student:', rollNo);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching marks from API:', error);
+        return null;
+      }
+    }
+
+    // Update local marks data for immediate display
+    updateLocalMarksData(rollNo, marksData) {
+      const existingIndex = this.marksData.findIndex(m => m["Roll No"] === rollNo);
+      
+      if (existingIndex !== -1) {
+        this.marksData[existingIndex] = marksData;
+      } else {
+        this.marksData.push(marksData);
+      }
+    }
+
+    async updateStudentMarks(rollNo, marks) {
+      try {
+        // Get current marks for the student
+        const currentMarks = await this.getStudentMarksFromAPI(rollNo);
+        
+        // Prepare the subject data
+        const subjectData = {
+          [this.currentTeacher.subject]: {
+            "Mid 1": this.currentExam === "Mid 1" ? marks : (currentMarks?.Subjects?.[this.currentTeacher.subject]?.["Mid 1"] || "NA"),
+            "Mid 2": this.currentExam === "Mid 2" ? marks : (currentMarks?.Subjects?.[this.currentTeacher.subject]?.["Mid 2"] || "NA"),
+            "Average": "NA"
+          }
+        };
+        
+        // Calculate average if both mid exams are present
+        const mid1 = subjectData[this.currentTeacher.subject]["Mid 1"];
+        const mid2 = subjectData[this.currentTeacher.subject]["Mid 2"];
+        
+        if (mid1 !== "NA" && mid2 !== "NA" && mid1 !== "A" && mid2 !== "A") {
+          const avg = Math.round((parseInt(mid1) + parseInt(mid2)) / 2);
+          subjectData[this.currentTeacher.subject]["Average"] = avg.toString();
+        }
+        
+        // Update marks via API
+        const response = await fetch(`/api/marks/${rollNo}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ subjects: subjectData })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('✅ Marks updated successfully via API');
+          // Update local data for immediate display
+          this.updateLocalMarksData(rollNo, result.data);
+          return result.data;
+        } else {
+          console.error('❌ Failed to update marks:', result.message);
+          return null;
+        }
+      } catch (error) {
+        console.error('❌ Error updating marks:', error);
+        return null;
+      }
+    }
+
+    async submitMarks() {
+      const inputs = document.querySelectorAll(".markInput");
+      let incomplete = false;
+      let updatedCount = 0;
+
+      // First pass: validate all inputs
+      inputs.forEach(input => {
+        const checkbox = document.querySelector(`.absentCheck[data-roll="${input.dataset.roll}"]`);
+        input.classList.remove("missing");
+
+        if (!checkbox.checked && input.value === '') {
+          input.classList.add("missing");
+          incomplete = true;
+        }
+      });
+
+      if (incomplete) {
+        alert("⚠️ Please fill marks or mark absent where applicable.");
+        return;
+      }
+
+      // Second pass: update marks via API
+      for (const input of inputs) {
+        const checkbox = document.querySelector(`.absentCheck[data-roll="${input.dataset.roll}"]`);
+        
+        let marks = '';
+        if (checkbox.checked) {
+          marks = 'A'; // Absent
+        } else if (input.value !== '') {
+          marks = input.value;
+        }
+
+        // Update marks via API
+        const result = await this.updateStudentMarks(input.dataset.roll, marks);
+        if (result) {
+          updatedCount++;
+        }
+
+        // Disable inputs if not in edit mode
+        if (!this.editMode) {
+          input.disabled = true;
+          checkbox.disabled = true;
+        }
+      }
+
+      alert(`✅ Marks updated for ${updatedCount} students and saved to server!`);
+      // Refresh display to show updated marks
+      this.loadStudentsBySection();
+    }
+
+    // Auto-save is now handled by the API
+    autoSaveMarks() {
+      console.log('✅ Marks are automatically saved via API');
+      return true;
+    }
+
+    showAutoSaveIndicator() {
+      const indicator = document.getElementById('autoSaveIndicator');
+      if (indicator) {
+        indicator.style.display = 'block';
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+          indicator.style.display = 'none';
+        }, 3000);
+      }
+    }
+
+         // Marks are now automatically synced via API
+         syncMarksWithFile() {
+           console.log('✅ Marks are automatically synced via API to student_marks.json');
+           return true;
+         }
+
+     createUpdatedFile(dataStr) {
+       try {
+         // Create the updated student_marks.json file
+         const dataBlob = new Blob([dataStr], {type: 'application/json'});
+         const link = document.createElement('a');
+         link.href = URL.createObjectURL(dataBlob);
+         link.download = 'student_marks.json'; // Same filename as your original
+         
+         // Show instructions
+         const instructions = `
+✅ Marks have been updated!
+
+📁 To update your student_marks.json file:
+1. The file "student_marks.json" will download automatically
+2. Replace your old student_marks.json with this new file
+3. Students will see the updated marks immediately
+
+🔄 File download starting now...
+         `;
+         
+         alert(instructions);
+         link.click();
+         
+         console.log('✅ Updated student_marks.json file created for download');
+         return true;
+       } catch (error) {
+         console.error('❌ Error creating updated file:', error);
+         return false;
+       }
+     }
+
+    forceReloadMarksFile() {
+      // Clear any cached version of student_marks.json
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => {
+            if (name.includes('student_marks')) {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+      
+      // Force browser to reload the file next time it's fetched
+      sessionStorage.setItem('marksFileVersion', Date.now().toString());
+    }
+
+    updateLastUpdateStatus(updateInfo) {
+      const lastUpdateElement = document.getElementById('lastUpdateTime');
+      if (lastUpdateElement && updateInfo) {
+        const date = new Date(updateInfo.lastUpdated);
+        const timeString = date.toLocaleString();
+        lastUpdateElement.textContent = `${timeString} by ${updateInfo.teacher} (${updateInfo.subject})`;
+      }
+    }
+
+    saveMarksToFile() {
+      try {
+        // First sync marks to ensure latest data
+        this.syncMarksWithFile();
+        
+        // Create downloadable JSON file when manually requested
+        const dataStr = JSON.stringify(this.marksData, null, 2);
+        
+        // Create a download link for the updated file
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = 'student_marks.json';
+        link.click();
+        
+        console.log('✅ Marks downloaded as student_marks.json');
+        alert('✅ Marks file downloaded successfully!');
+        return true;
+      } catch (error) {
+        console.error('❌ Error downloading marks:', error);
+        alert('❌ Error downloading marks. Please try again.');
+        return false;
+      }
+    }
+  }
+
+  // Global dashboard instance
+  let teacherDashboard;
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    teacherDashboard = new TeacherDashboard();
+  });
+
+  // Global functions for HTML onclick events
+  function loadStudentsBySection() {
+    if (teacherDashboard) {
+      teacherDashboard.loadStudentsBySection();
+    }
+  }
+
+  function submitMarks() {
+    if (teacherDashboard) {
+      teacherDashboard.submitMarks();
+    }
+  }
+
+  function toggleEditMode() {
+    if (teacherDashboard) {
+      teacherDashboard.editMode = !teacherDashboard.editMode;
+      const inputs = document.querySelectorAll(".markInput");
+      const checkboxes = document.querySelectorAll(".absentCheck");
+      const btn = document.getElementById("editToggle");
+
+      if (teacherDashboard.editMode) {
+        btn.textContent = "🔒 Lock Marks";
+        btn.classList.add("edit-mode");
+        inputs.forEach(i => i.disabled = false);
+        checkboxes.forEach(c => c.disabled = false);
+      } else {
+        btn.textContent = "✏️ Change Marks";
+        btn.classList.remove("edit-mode");
+        inputs.forEach(i => i.disabled = true);
+        checkboxes.forEach(c => c.disabled = true);
+      }
+    }
+  }
+
+     function logoutTeacher() {
+     sessionStorage.removeItem('currentTeacher');
+     window.location.href = 'teacherlogin.html';
+   }
+   
+               function syncMarksToFile() {
+       if (teacherDashboard) {
+         teacherDashboard.syncMarksWithFile();
+         alert('✅ Marks saved successfully! Students can now see the updated marks.');
+       }
+     }
+
+  // Update exam selection handler
+  document.getElementById('exam').addEventListener('change', function() {
+    if (teacherDashboard) {
+      teacherDashboard.currentExam = this.value;
+      teacherDashboard.loadStudentsBySection();
+    }
+  });
+</script>
+
+</body>
+</html>
